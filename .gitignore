@@ -1,0 +1,32 @@
+# Arquivos de Sistema
+.DS_Store
+Thumbs.db
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+
+# Metadados de IDE (IntelliJ, Eclipse, VSCode)
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/launch.json
+.vscode/tasks.json
+
+# Arquivos compilados do Java
+*.class
+
+# Pastas de build (Maven, Gradle)
+target/
+build/
+out/
+
+# Jars e outros pacotes
+*.jar
+*.war
+*.ear
+
+# Arquivos de dependências do Maven
+.mvn/wrapper/maven-wrapper.jar
