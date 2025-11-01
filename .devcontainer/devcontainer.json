@@ -29,7 +29,7 @@
 
   // Comando executado após a criação do container
   // Instala Maven e utilitários adicionais
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/* && npm install -g @angular/cli@20",
 
   // Customizações específicas do VS Code
   "customizations": {
