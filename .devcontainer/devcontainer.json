@@ -1,0 +1,61 @@
+{
+  "name": "Backend Java (Spring Boot) - Java 21",
+  // Imagem base com Java 21
+  "image": "mcr.microsoft.com/devcontainers/java:21",
+
+  "features": {
+    // Habilita o Docker-outside-of-Docker (DooD):
+    // 1. Monta o /var/run/docker.sock
+    // 2. Instala o Docker CLI
+    // 3. Adiciona o usuário 'vscode' ao grupo 'docker'
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      // Evita o erro de 'moby' no Debian 'trixie'
+      // Isso instrui a feature a usar 'docker-ce-cli' em vez de 'moby-cli'
+      "moby": false
+    },
+    // Instala o Node.js v22 (requerido pelo SonarLint)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+
+  // Argumentos de execução para o container
+  "runArgs": [
+    // Conecta o container a uma rede Docker customizada
+    "--network=dev-network"
+  ],
+
+  // Encaminha a porta padrão do Spring Boot
+  "forwardPorts": [8080],
+
+  // Comando executado após a criação do container
+  // Instala Maven e utilitários adicionais
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*",
+
+  // Customizações específicas do VS Code
+  "customizations": {
+    "vscode": {
+      // Extensões que serão instaladas dentro do container
+      "extensions": [
+        // Pacotes de Java e Spring
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "VisualStudioExptTeam.intellicode-api-usage-examples",
+        "redhat.vscode-xml", // Suporte a pom.xml
+
+        // Suporte a BDD (Cucumber)
+        "cucumber.cucumber",
+
+        // DevOps, QA e Git
+        "ms-azuretools.vscode-docker",
+        "SonarSource.sonarlint-vscode", // Integração SonarQube
+        "ryanluker.vscode-coverage-gutters", // Exibe cobertura de testes
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "ms-vscode.live-server"
+      ]
+    }
+  },
+  // Define o usuário padrão como não-root
+  "remoteUser": "vscode"
+}
