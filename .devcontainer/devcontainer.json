@@ -51,7 +51,8 @@
         "SonarSource.sonarlint-vscode", // Integração SonarQube
         "ryanluker.vscode-coverage-gutters", // Exibe cobertura de testes
         "eamodio.gitlens",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "ms-vscode.live-server"
       ]
     }
   },
