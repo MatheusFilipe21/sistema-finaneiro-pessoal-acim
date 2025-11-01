@@ -30,3 +30,11 @@ out/
 
 # Arquivos de dependências do Maven
 .mvn/wrapper/maven-wrapper.jar
+
+# Regras para Node.js / Angular
+node_modules/
+dist/
+coverage/
+.angular/
+npm-debug.log*
+.npm/
