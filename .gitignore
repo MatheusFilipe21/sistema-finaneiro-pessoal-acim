@@ -5,6 +5,10 @@ Thumbs.db
 # Logs e arquivos temporários
 *.log
 *.tmp
+npm-debug.log
+yarn-error.log
+libpeerconnection.log
+testem.log
 
 # Metadados de IDE (IntelliJ, Eclipse, VSCode)
 .idea/
@@ -12,8 +16,9 @@ Thumbs.db
 .project
 .classpath
 .settings/
-.vscode/launch.json
-.vscode/tasks.json
+.c9/
+*.launch
+*.sublime-workspace
 
 # Arquivos compilados do Java
 *.class
@@ -32,9 +37,28 @@ out/
 .mvn/wrapper/maven-wrapper.jar
 
 # Regras para Node.js / Angular
-node_modules/
+
+# Saída de compilação
 dist/
-coverage/
+tmp/
+out-tsc/
+bazel-out/
+
+# Regras do Node
+node_modules/
+
+# Regras do Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Diversos
 .angular/
-npm-debug.log*
-.npm/
+.sass-cache/
+connect.lock
+coverage/
+typings/
+__screenshots__/

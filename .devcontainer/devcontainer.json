@@ -21,11 +21,12 @@
   // Argumentos de execução para o container
   "runArgs": [
     // Conecta o container a uma rede Docker customizada
-    "--network=dev-network"
+    "--network=dev-network",
+    "-p",
+    "8080:8080",
+    "-p",
+    "4200:4200"
   ],
-
-  // Encaminha a porta padrão do Spring Boot
-  "forwardPorts": [8080, 4200],
 
   // Comando executado após a criação do container
   // Instala Maven e utilitários adicionais
