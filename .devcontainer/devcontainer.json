@@ -1,6 +1,5 @@
 {
-  "name": "Backend Java (Spring Boot) - Java 21",
-  // Imagem base com Java 21
+  "name": "Dev Container (Java/Angular)",
   "image": "mcr.microsoft.com/devcontainers/java:21",
 
   "features": {
@@ -13,7 +12,7 @@
       // Isso instrui a feature a usar 'docker-ce-cli' em vez de 'moby-cli'
       "moby": false
     },
-    // Instala o Node.js v22 (requerido pelo SonarLint)
+    // Instala o Node.js v22 (requerido pelo SonarLint e necessário para o Angular)
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
     }
@@ -22,15 +21,16 @@
   // Argumentos de execução para o container
   "runArgs": [
     // Conecta o container a uma rede Docker customizada
-    "--network=dev-network"
+    "--network=dev-network",
+    "-p",
+    "8080:8080",
+    "-p",
+    "4200:4200"
   ],
-
-  // Encaminha a porta padrão do Spring Boot
-  "forwardPorts": [8080],
 
   // Comando executado após a criação do container
   // Instala Maven e utilitários adicionais
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/* && npm install -g @angular/cli@20",
 
   // Customizações específicas do VS Code
   "customizations": {
@@ -42,6 +42,9 @@
         "vmware.vscode-boot-dev-pack",
         "VisualStudioExptTeam.intellicode-api-usage-examples",
         "redhat.vscode-xml", // Suporte a pom.xml
+        // Angular
+        "angular.ng-template",
+        "dbaeumer.vscode-eslint",
 
         // Suporte a BDD (Cucumber)
         "cucumber.cucumber",

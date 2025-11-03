@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // --- Configuração do Backend (Java/Spring) ---
+    {
+      "type": "java",
+      "name": "Spring Boot (Backend)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "br.com.sfpacim.backend.BackendApplication",
+      "projectName": "backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    // --- Configuração de Teste do Backend (Maven) ---
+    {
+      "name": "Spring Boot (Testes)",
+      "type": "node",
+      "request": "launch",
+      "program": "index.js",
+      "preLaunchTask": "Maven: Clean Verify (Backend)",
+      "internalConsoleOptions": "neverOpen"
+    },
+    // --- Configuração do Frontend (Angular ng serve) ---
+    {
+      "type": "node",
+      "name": "Angular (Frontend)",
+      "request": "launch",
+      "preLaunchTask": "Angular: Serve (Frontend)",
+      "internalConsoleOptions": "neverOpen"
+    },
+    // --- Configuração de Teste do Frontend (Angular ng test) ---
+    {
+      "type": "node",
+      "name": "Angular (Testes)",
+      "request": "launch",
+      "preLaunchTask": "Angular: Test (Frontend)",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
