@@ -55,6 +55,17 @@ node_modules/
 !.vscode/extensions.json
 .history/*
 
+# Regras Python (Selenium)
+
+# Ambientes Virtuais (Venvs)
+venv
+.venv
+pip-log.txt
+
+# Arquivos compilados/cache
+__pycache__
+*.pyc
+
 # Diversos
 .angular/
 .sass-cache/

@@ -36,6 +36,17 @@
       "request": "launch",
       "preLaunchTask": "Angular: Test (Frontend)",
       "internalConsoleOptions": "neverOpen"
+    },
+    // --- Configuração de Debug do E2E (Python/Behave) ---
+    {
+      "type": "debugpy",
+      "name": "Selenium (E2E)",
+      "request": "launch",
+      "program": "${workspaceFolder}/e2e/venv/bin/behave",
+      "args": ["features/"],
+      "cwd": "${workspaceFolder}/e2e",
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
   ]
 }
