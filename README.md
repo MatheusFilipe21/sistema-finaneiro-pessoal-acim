@@ -1,4 +1,4 @@
-# Sistema Financeiro Pessoal ACIM (SFP-ACIM)
+# 💰 Sistema Financeiro Pessoal ACIM (SFP-ACIM)
 
 O SFP-ACIM é uma plataforma modular de gestão financeira pessoal desenvolvida para oferecer controle detalhado sobre receitas e despesas. Este projeto utiliza uma arquitetura moderna de monorepo.
 
@@ -16,7 +16,7 @@ Nosso monorepo é construído com as seguintes tecnologias principais:
 | **Testes E2E**      | Python / Selenium / Behave | 3.12     | Validação de fluxo ponta-a-ponta (BDD).                  |
 | **Containerização** | Docker Compose             |          | Ambiente de desenvolvimento local e CI/CD.               |
 
-## Arquitetura e Padrões
+## 🏗️ Arquitetura e Padrões
 
 O projeto segue um modelo de **Monorepo** com separação clara de responsabilidades:
 
@@ -26,7 +26,7 @@ O projeto segue um modelo de **Monorepo** com separação clara de responsabilid
 
 ---
 
-## Estratégia de Testes (Quality Gate)
+## 🧪 Estratégia de Testes (Quality Gate)
 
 A qualidade é aplicada em três camadas:
 
@@ -34,7 +34,7 @@ A qualidade é aplicada em três camadas:
 - **Integração/BDD (API):** Usando **Cucumber e Rest Assured** para validar o comportamento dos **fluxos de negócio** e a comunicação entre as camadas da API.
 - **E2E (Ponta-a-Ponta):** Usando **Selenium e Behave (Python)** para automatizar os cenários Gherkin no navegador (Chrome Headless), validando a comunicação completa entre o Frontend e o Backend.
 
-## Setup do Ambiente de Desenvolvimento (DevContainer)
+## 💻 Setup do Ambiente de Desenvolvimento (DevContainer)
 
 O ambiente está 100% configurado para VS Code/Docker.
 
