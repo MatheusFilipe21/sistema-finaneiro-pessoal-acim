@@ -1,0 +1,69 @@
+# Define os serviços (containers) que compõem a aplicação.
+services:
+  # Serviço 1: O banco de dados PostgreSQL (DB).
+  postgres-db:
+    image: postgres:18-alpine # Usa a imagem oficial do Postgres, versão 18 (leve).
+    container_name: sfpacim_postgres
+    restart: always # Reinicia o container automaticamente se ele falhar.
+    environment:
+      # Define as variáveis de ambiente para o setup inicial do Postgres.
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sfpacim_db
+    ports:
+      # Mapeia a porta interna (5432) do Postgres para a porta 5433 do host (para evitar conflitos no ambiente de desenvolvimento).
+      - "5433:5432"
+    volumes:
+      # Persiste os dados do banco usando um volume nomeado.
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      # Conecta este serviço à rede interna.
+      - sfpacim_network
+
+  # Serviço 2: A API Backend (Spring Boot).
+  app-backend:
+    build:
+      context: ./backend # Instrui o Docker a construir a imagem a partir da pasta 'backend/'.
+      dockerfile: Dockerfile
+    container_name: sfpacim_backend
+    restart: always
+    environment:
+      # Variáveis de ambiente para o Spring Boot se conectar ao DB.
+      # O Spring usará o nome 'postgres-db' (DNS do Docker) para encontrar o banco.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/sfpacim_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      # Mapeia a porta interna (8080) do Spring para a porta 8081 do host.
+      - "8081:8080"
+    depends_on:
+      # Garante que o backend só inicie depois que o 'postgres-db' estiver pronto.
+      - postgres-db
+    networks:
+      - sfpacim_network
+
+  # Serviço 3: A aplicação Frontend (Angular servido pelo Nginx).
+  app-frontend:
+    build:
+      context: ./frontend # Instrui o Docker a construir a imagem a partir da pasta 'frontend/'.
+      dockerfile: Dockerfile
+    container_name: sfpacim_frontend
+    restart: always
+    ports:
+      # Mapeia a porta interna (80) do Nginx para a porta 4201 do host.
+      - "4201:80"
+    depends_on:
+      # Garante que o frontend só inicie *depois* que o 'app-backend' estiver pronto (para o proxy /api funcionar).
+      - app-backend
+    networks:
+      - sfpacim_network
+
+# Define a rede 'bridge' customizada para permitir a comunicação entre os containers
+# usando os nomes dos serviços (ex: 'postgres-db', 'app-backend').
+networks:
+  sfpacim_network:
+    driver: bridge
+
+# Define o volume nomeado para persistir os dados do Postgres.
+volumes:
+  postgres_data:
