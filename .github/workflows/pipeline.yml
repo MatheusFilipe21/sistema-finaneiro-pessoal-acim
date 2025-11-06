@@ -43,11 +43,12 @@ jobs:
       # 4. Enviar Análise para o SonarQube
       - name: Enviar Análise para o SonarQube Cloud
         working-directory: ./backend
-        run: mvn -B sonar:sonar \
-          -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim \
-          -Dsonar.organization=matheusfilipe21 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B sonar:sonar \
+            -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim \
+            -Dsonar.organization=matheusfilipe21 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
           # Passa o Segredo do GitHub para o Maven
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
