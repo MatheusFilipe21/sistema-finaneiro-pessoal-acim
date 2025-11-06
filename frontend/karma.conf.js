@@ -10,6 +10,7 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
+      require('karma-junit-reporter'),
     ],
     client: {
       jasmine: {
@@ -27,14 +28,20 @@ module.exports = function (config) {
       subdir: '.',
       reporters: [{ type: 'html' }, { type: 'text-summary' }, { type: 'lcovonly' }],
     },
+    junitReporter: {
+      outputDir: require('path').join(__dirname, './coverage/frontend'),
+      outputFile: 'junit-report.xml',
+      useBrowserName: false,
+    },
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
         flags: ['--no-sandbox'],
       },
     },
-    reporters: ['progress', 'kjhtml', 'coverage'],
+    reporters: ['progress', 'kjhtml', 'coverage', 'junit'],
     browsers: ['ChromeHeadlessNoSandbox'],
+    singleRun: false,
     restartOnFileChange: true,
   });
 };
