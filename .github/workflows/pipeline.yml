@@ -1,0 +1,53 @@
+# Nome do Workflow
+name: CI/CD Pipeline (Backend, Frontend, E2E)
+
+# =======================================================
+# Gatilhos (Triggers)
+# =======================================================
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop]
+
+# Define os Jobs
+jobs:
+  # =======================================================
+  # Job 1 (Backend - Java/Spring)
+  # =======================================================
+  job-1-backend:
+    name: "Job 1: Construir e Testar Backend"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Setup Java 21
+      - name: Configurar JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
+
+      # 3. Executar o Build (mvn verify)
+      - name: Executar Maven Verify (Testes + Cobertura JaCoCo)
+        # Define o diretório de trabalho para este passo
+        working-directory: ./backend
+        run: mvn -B verify
+
+      # 4. Enviar Análise para o SonarQube
+      - name: Enviar Análise para o SonarQube Cloud
+        working-directory: ./backend
+        run: mvn -B sonar:sonar \
+          -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim \
+          -Dsonar.organization=matheusfilipe21 \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          # Passa o Segredo do GitHub para o Maven
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
