@@ -7,8 +7,22 @@ name: CI/CD Pipeline (Backend, Frontend, E2E)
 on:
   push:
     branches: [main, develop]
+    # A pipeline só roda se houver mudanças nestas pastas
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/pipeline.yml"
+
   pull_request:
     branches: [develop]
+    # A pipeline só roda se houver mudanças nestas pastas
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/pipeline.yml"
+
+  # Gatilho para execução manual
+  workflow_dispatch:
 
 # Define os Jobs
 jobs:
@@ -40,15 +54,46 @@ jobs:
         working-directory: ./backend
         run: mvn -B verify
 
-      # 4. Enviar Análise para o SonarQube
-      - name: Enviar Análise para o SonarQube Cloud
-        working-directory: ./backend
+  # =======================================================
+  # Job 2 (Frontend - Angular/Node)
+  # =======================================================
+  job-2-frontend:
+    name: "Job 2: Construir e Testar Frontend"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js (v22, como no devcontainer)
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # 3. Instalar o Google Chrome (necessário para o CHROME_BIN)
+      - name: Instalar Google Chrome (para Karma/Headless)
         run: |
-          mvn -B sonar:sonar \
-            -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim \
-            -Dsonar.organization=matheusfilipe21 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-        env:
-          # Passa o Segredo do GitHub para o Maven
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          sudo wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg
+          sudo sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      # 4. Instalar Dependências (npm ci)
+      - name: Instalar dependências (npm ci)
+        # Define o diretório de trabalho para este passo
+        working-directory: ./frontend
+        run: npm ci
+
+      # 5. Executar Testes (ng test)
+      # O 'npm run test' (do package.json) define o CHROME_BIN
+      # O 'karma.conf.js' define o ChromeHeadlessNoSandbox
+      # O 'angular.json' define o codeCoverage
+      - name: Executar Testes do Angular (npm test -- --no-watch)
+        working-directory: ./frontend
+        run: npm run test -- --no-watch
