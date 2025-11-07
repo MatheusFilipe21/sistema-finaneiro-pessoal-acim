@@ -62,7 +62,8 @@
         "ryanluker.vscode-coverage-gutters", // Exibe cobertura de testes
         "eamodio.gitlens",
         "esbenp.prettier-vscode",
-        "ms-vscode.live-server"
+        "ms-vscode.live-server",
+        "github.vscode-github-actions"
       ]
     }
   },
