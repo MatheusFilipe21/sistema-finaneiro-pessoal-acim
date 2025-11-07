@@ -166,7 +166,7 @@ jobs:
 
       # 6. Iniciar a Aplicação (Docker Compose)
       - name: Iniciar Aplicação (Docker Compose)
-        run: docker-compose up --build -d
+        run: docker compose up --build -d
 
       # 7. Aguardar o Frontend (Nginx) ficar pronto
       - name: Aguardar o Frontend (Nginx) ficar pronto
@@ -188,7 +188,7 @@ jobs:
       # 9. Parar a Aplicação (Sempre roda, mesmo se o E2E falhar)
       - name: Parar Aplicação (Docker Compose)
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
       # 10. Enviar Análise Monorepo para o SonarQube
       - name: Configurar Cache do SonarScanner
