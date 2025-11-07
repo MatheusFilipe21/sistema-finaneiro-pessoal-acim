@@ -179,6 +179,9 @@ jobs:
       # 8. Instalar e Rodar os Testes E2E (Behave/Selenium)
       - name: Instalar e Rodar Testes E2E (Behave)
         working-directory: ./e2e
+        # Define a variável de ambiente que o environment.py irá ler
+        env:
+          FRONTEND_URL: "http://localhost:4201"
         run: |
           python -m venv venv
           source venv/bin/activate
