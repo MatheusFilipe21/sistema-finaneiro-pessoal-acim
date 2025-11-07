@@ -11,6 +11,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - "e2e/**"
       - ".github/workflows/pipeline.yml"
 
   pull_request:
@@ -19,6 +20,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - "e2e/**"
       - ".github/workflows/pipeline.yml"
 
   # Gatilho para execução manual
@@ -49,10 +51,19 @@ jobs:
           cache: "maven"
 
       # 3. Executar o Build (mvn verify)
-      - name: Executar Maven Verify (Testes + Cobertura JaCoCo)
+      - name: Executar Maven Verify (Testes + Relatório JaCoCo XML)
         # Define o diretório de trabalho para este passo
         working-directory: ./backend
-        run: mvn -B verify
+        run: mvn -B verify org.jacoco:jacoco-maven-plugin:report
+
+      # 4. Carrega os relatórios para o Job 3
+      - name: Carregar Artefatos do Backend (JaCoCo XML + Surefire)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            backend/target/site/jacoco/jacoco.xml
+            backend/target/surefire-reports/
 
   # =======================================================
   # Job 2 (Frontend - Angular/Node)
@@ -97,3 +108,114 @@ jobs:
       - name: Executar Testes do Angular (npm test -- --no-watch)
         working-directory: ./frontend
         run: npm run test -- --no-watch
+
+      # 6. Carrega os relatórios para o Job 3
+      - name: Carregar Artefatos do Frontend (LCOV + JUnit XML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-reports
+          path: |
+            frontend/coverage/frontend/lcov.info
+            frontend/coverage/frontend/junit-report.xml
+
+  # =======================================================
+  # Job 3 (E2E, SonarQube, Quality Gate)
+  # =======================================================
+  job-3-e2e-e-sonar:
+    name: "Job 3: Testes E2E e Análise SonarQube"
+    runs-on: ubuntu-latest
+
+    # Dependência: Só roda se os Jobs 1 e 2 passarem
+    needs: [job-1-backend, job-2-frontend]
+
+    steps:
+      # 1. Checkout
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Setup Java 21 (Necessário para o SonarScanner)
+      - name: Configurar JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      # 3. Setup Python (Necessário para o E2E)
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: e2e/requirements.txt
+
+      # 4. Baixar os Artefatos dos Jobs 1 e 2
+      - name: Baixar Artefatos do Backend
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-reports
+          path: backend/target/
+
+      # 5. Baixar Artefatos do Frontend
+      - name: Baixar Artefatos do Frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-reports
+          path: frontend/coverage/frontend/
+
+      # 6. Iniciar a Aplicação (Docker Compose)
+      - name: Iniciar Aplicação (Docker Compose)
+        run: docker-compose up --build -d
+
+      # 7. Aguardar o Frontend (Nginx) ficar pronto
+      - name: Aguardar o Frontend (Nginx) ficar pronto
+        run: |
+          timeout 60s bash -c 'until curl --fail http://localhost:4201 2>/dev/null; do
+            echo "Aguardando o Frontend (Nginx) na porta 4201...";
+            sleep 5;
+          done'
+
+      # 8. Instalar e Rodar os Testes E2E (Behave/Selenium)
+      - name: Instalar e Rodar Testes E2E (Behave)
+        working-directory: ./e2e
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          behave features/
+
+      # 9. Parar a Aplicação (Sempre roda, mesmo se o E2E falhar)
+      - name: Parar Aplicação (Docker Compose)
+        if: always()
+        run: docker-compose down
+
+      # 10. Enviar Análise Monorepo para o SonarQube
+      - name: Configurar Cache do SonarScanner
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      # 11. Executar SonarScanner (Monorepo) e Quality Gate
+      - name: Executar SonarScanner (Monorepo) e Quality Gate
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # Argumentos para o SonarScanner CLI
+          args: >
+            -Dsonar.organization=matheusfilipe21
+            -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim
+            -Dsonar.sources=backend/src/main,frontend/src/app
+            -Dsonar.tests=backend/src/test,frontend/src/app
+            -Dsonar.test.inclusions=**/*.java,**/*.spec.ts
+            -Dsonar.java.binaries=backend/target/classes
+            -Dsonar.java.surefire.reportPaths=backend/target/surefire-reports
+            -Dsonar.java.coveragePlugin=jacoco
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
+            -Dsonar.typescript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
+            -Dsonar.junit.reportPaths=frontend/coverage/frontend/junit-report.xml
