@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // --- Configuração do Backend (Java/Spring) ---
+    {
+      "type": "java",
+      "name": "Spring Boot (Backend)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "br.com.sfpacim.backend.BackendApplication",
+      "projectName": "backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    // --- Configuração do Frontend (Angular ng serve) ---
+    {
+      "type": "node",
+      "name": "Angular (Frontend)",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal"
+    },
+    // --- Configuração de Teste do Frontend (Angular ng test) ---
+    {
+      "type": "node",
+      "name": "Angular (Testes)",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal"
+    },
+    // --- Configuração de Debug do E2E (Python/Behave) ---
+    {
+      "type": "debugpy",
+      "name": "Selenium (E2E)",
+      "request": "launch",
+      "program": "${workspaceFolder}/e2e/venv/bin/behave",
+      "args": ["features/"],
+      "cwd": "${workspaceFolder}/e2e",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

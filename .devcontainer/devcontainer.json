@@ -1,0 +1,74 @@
+{
+  "name": "Dev Container (Java/Angular)",
+  "image": "mcr.microsoft.com/devcontainers/java:21",
+
+  "features": {
+    // Habilita o Docker-outside-of-Docker (DooD):
+    // 1. Monta o /var/run/docker.sock
+    // 2. Instala o Docker CLI
+    // 3. Adiciona o usuário 'vscode' ao grupo 'docker'
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      // Evita o erro de 'moby' no Debian 'trixie'
+      // Isso instrui a feature a usar 'docker-ce-cli' em vez de 'moby-cli'
+      "moby": false
+    },
+    // Instala o Node.js v22 (requerido pelo SonarLint e necessário para o Angular)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    }
+  },
+
+  // Argumentos de execução para o container
+  "runArgs": [
+    // Conecta o container a uma rede Docker customizada
+    "--network=dev-network",
+    "-p",
+    "8080:8080",
+    "-p",
+    "4200:4200"
+  ],
+
+  // Comando executado após a criação do container
+  // Responsável por instalar todas as ferramentas de sistema (Maven, Git-Flow, Chrome)
+  // e as dependências de projeto (Angular CLI, npm ci, pip install).
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y maven git-flow vim tree lsof wget gnupg && sudo wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg && sudo sh -c 'echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main\" > /etc/apt/sources.list.d/google-chrome.list' && sudo apt-get update && sudo apt-get install -y google-chrome-stable && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/* && npm install -g @angular/cli@20 && echo 'source <(ng completion script)' >> /home/vscode/.bashrc && (cd frontend && npm ci) && pip install -r e2e/requirements.txt",
+
+  // Customizações específicas do VS Code
+  "customizations": {
+    "vscode": {
+      // Extensões que serão instaladas dentro do container
+      "extensions": [
+        // Pacotes de Java e Spring
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "VisualStudioExptTeam.intellicode-api-usage-examples",
+        "redhat.vscode-xml", // Suporte a pom.xml
+        // Angular
+        "angular.ng-template",
+        "dbaeumer.vscode-eslint",
+        // Selenium (Python)
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "littlefoxteam.vscode-python-test-adapter",
+
+        // Suporte a BDD (Cucumber)
+        "cucumber.cucumber",
+
+        // DevOps, QA e Git
+        "ms-azuretools.vscode-docker",
+        "SonarSource.sonarlint-vscode", // Integração SonarQube
+        "ryanluker.vscode-coverage-gutters", // Exibe cobertura de testes
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "ms-vscode.live-server",
+        "github.vscode-github-actions",
+        "ms-azuretools.vscode-containers"
+      ]
+    }
+  },
+  // Define o usuário padrão como não-root
+  "remoteUser": "vscode"
+}
