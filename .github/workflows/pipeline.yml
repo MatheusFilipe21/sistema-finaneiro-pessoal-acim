@@ -56,7 +56,12 @@ jobs:
         working-directory: ./backend
         run: mvn -B verify org.jacoco:jacoco-maven-plugin:report
 
-      # 4. Carrega os relatórios para o Job 3
+      # 4. Copiar as dependências JAR para análise do SonarQube
+      - name: Copiar Dependências para o SonarScanner
+        working-directory: ./backend
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency-jars
+
+      # 5. Carrega os relatórios para o Job 3
       - name: Carregar Artefatos do Backend (JaCoCo XML + Surefire)
         uses: actions/upload-artifact@v4
         with:
@@ -65,6 +70,7 @@ jobs:
             backend/target/site/jacoco/jacoco.xml
             backend/target/surefire-reports/
             backend/target/classes/
+            backend/target/dependency-jars
 
   # =======================================================
   # Job 2 (Frontend - Angular/Node)
@@ -216,6 +222,7 @@ jobs:
             -Dsonar.sources=backend/src/main,frontend/src/app
             -Dsonar.tests=backend/src/test,frontend/src/app
             -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.java.libraries=backend/target/dependency-jars
             -Dsonar.java.binaries=backend/target/classes
             -Dsonar.java.surefire.reportPaths=backend/target/surefire-reports
             -Dsonar.java.coveragePlugin=jacoco
