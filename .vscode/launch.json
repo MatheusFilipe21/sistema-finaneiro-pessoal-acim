@@ -37,7 +37,7 @@
       "type": "debugpy",
       "name": "Selenium (E2E)",
       "request": "launch",
-      "program": "${workspaceFolder}/e2e/venv/bin/behave",
+      "module": "behave",
       "args": ["features/"],
       "cwd": "${workspaceFolder}/e2e",
       "console": "integratedTerminal",
