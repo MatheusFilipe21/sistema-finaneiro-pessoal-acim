@@ -64,6 +64,7 @@ jobs:
           path: |
             backend/target/site/jacoco/jacoco.xml
             backend/target/surefire-reports/
+            backend/target/classes/
 
   # =======================================================
   # Job 2 (Frontend - Angular/Node)
