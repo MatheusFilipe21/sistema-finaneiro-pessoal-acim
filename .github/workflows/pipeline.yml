@@ -218,7 +218,7 @@ jobs:
             -Dsonar.java.binaries=backend/target/classes
             -Dsonar.java.surefire.reportPaths=backend/target/surefire-reports
             -Dsonar.java.coveragePlugin=jacoco
-            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/jacoco.xml
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
             -Dsonar.typescript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
             -Dsonar.junit.reportPaths=frontend/coverage/frontend/junit-report.xml
