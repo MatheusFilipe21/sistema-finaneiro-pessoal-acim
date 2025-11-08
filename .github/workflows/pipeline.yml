@@ -215,7 +215,6 @@ jobs:
             -Dsonar.projectKey=MatheusFilipe21_sistema-finaneiro-pessoal-acim
             -Dsonar.sources=backend/src/main,frontend/src/app
             -Dsonar.tests=backend/src/test,frontend/src/app
-            -Dsonar.test.inclusions=**/*.java,**/*.spec.ts
             -Dsonar.java.binaries=backend/target/classes
             -Dsonar.java.surefire.reportPaths=backend/target/surefire-reports
             -Dsonar.java.coveragePlugin=jacoco
