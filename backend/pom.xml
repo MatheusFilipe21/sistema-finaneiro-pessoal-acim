@@ -35,7 +35,7 @@
         <jacoco.plugin.version>0.8.14</jacoco.plugin.version>
         <sonar.plugin.version>3.11.0.3922</sonar.plugin.version>
         <jjwt.version>0.12.5</jjwt.version>
-        <springdoc.version>2.5.0</springdoc.version>
+        <springdoc.version>2.8.14</springdoc.version>
     </properties>
     <dependencies>
         <dependency>
@@ -171,6 +171,9 @@
                 <configuration>
                     <excludes>
                         <exclude>br/com/sfpacim/backend/BackendApplication.class</exclude>
+                        <exclude>br/com/sfpacim/backend/config/**</exclude>
+                        <exclude>br/com/sfpacim/backend/dtos/**</exclude>
+                        <exclude>br/com/sfpacim/backend/exceptions/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
