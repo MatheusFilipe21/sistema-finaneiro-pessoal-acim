@@ -3,6 +3,7 @@ package br.com.sfpacim.backend.exceptions;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -51,6 +52,29 @@ public class TratadorDeErrosGlobal {
                 requisicao.getRequestURI());
 
         return ResponseEntity.badRequest().body(erroPadrao);
+    }
+
+    /**
+     * Manipula exceções de autenticação (lançadas pelo Spring Security).
+     * Retorna HTTP 401 (Unauthorized) se o e-mail ou senha estiverem incorretos
+     * durante a tentativa de login (RF13).
+     *
+     * @param excecao    A exceção {@link AuthenticationException} capturada.
+     * @param requisicao A requisição HTTP (para obter a Rota/URI).
+     * @return ResponseEntity (HTTP 401) com o {@link ErroPadraoDTO}.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroPadraoDTO> excecaoAutenticacao(AuthenticationException excecao,
+            HttpServletRequest requisicao) {
+        log.warn("Falha na autenticação: {}", excecao.getMessage());
+
+        ErroPadraoDTO erroPadrao = new ErroPadraoDTO(
+                HttpStatus.UNAUTHORIZED, // 401
+                "Falha na Autenticação",
+                "E-mail ou senha inválidos.",
+                requisicao.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(erroPadrao);
     }
 
     /**

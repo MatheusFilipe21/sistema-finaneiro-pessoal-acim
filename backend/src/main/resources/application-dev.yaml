@@ -31,3 +31,16 @@ spring:
         "[format_sql]": true
         # Informa ao Hibernate qual "dialeto" SQL ele deve usar.
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# =======================================================
+# CONFIGURAÇÕES DA API (SFP-ACIM)
+# =======================================================
+api:
+  security:
+    token:
+      # Chave secreta para assinar o JWT.
+      secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+
+      # Tempo de expiração do token (em milissegundos)
+      # Ex: 28800000 = 8 horas
+      expiration-ms: 28800000

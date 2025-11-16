@@ -2,12 +2,15 @@ package br.com.sfpacim.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Classe de configuração principal do Spring Security.
@@ -22,6 +25,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SegurancaConfig {
 
+    private final JWTFilter jwtFilter;
+
+    /**
+     * Construtor para Injeção de Dependências.
+     * O Spring injeta automaticamente o JWTFilter quando esta classe de
+     * configuração é criada.
+     *
+     * @param jwtFilter O filtro customizado para validação de tokens JWT.
+     */
+    public SegurancaConfig(JWTFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     /**
      * Expõe o BCryptPasswordEncoder como um Bean gerenciado pelo Spring.
      * 
@@ -34,6 +50,23 @@ public class SegurancaConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Expõe o AuthenticationManager (gerenciador de autenticação) do Spring
+     * como um Bean.
+     *
+     * <p>
+     * O AutenticacaoController irá injetar este Bean para processar
+     * as tentativas de login (RF10).
+     *
+     * @param configuration A configuração de autenticação do Spring.
+     * @return O AuthenticationManager configurado.
+     * @throws Exception Exceção qualquer.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     /**
@@ -63,11 +96,18 @@ public class SegurancaConfig {
                         // Permite acesso público (não autenticado) ao endpoint de cadastro (RF07).
                         .requestMatchers("/autenticacao/cadastro").permitAll()
 
+                        // Permite acesso público (não autenticado) ao endpoint de login (RF08).
+                        .requestMatchers("/autenticacao/login").permitAll()
+
                         // Permite acesso público (não autenticado) à documentação do Swagger.
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
 
                         // Exige autenticação para todas as outras requisições.
                         .anyRequest().authenticated())
+
+                // Adiciona o filtro JWT (JWTFilter) para rodar antes do filtro de autenticação
+                // padrão do Spring.
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

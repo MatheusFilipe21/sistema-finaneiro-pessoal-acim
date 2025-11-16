@@ -13,15 +13,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.sfpacim.backend.config.SegurancaConfig;
+import br.com.sfpacim.backend.dtos.autenticacao.DadosAutenticacaoDTO;
+import br.com.sfpacim.backend.dtos.autenticacao.DadosTokenJWTDTO;
 import br.com.sfpacim.backend.dtos.usuario.DadosCadastroUsuarioDTO;
 import br.com.sfpacim.backend.dtos.usuario.UsuarioDTO;
 import br.com.sfpacim.backend.exceptions.TratadorDeErrosGlobal;
+import br.com.sfpacim.backend.services.AutenticacaoService;
+import br.com.sfpacim.backend.services.TokenService;
 import br.com.sfpacim.backend.services.UsuarioService;
 
 /**
@@ -47,12 +53,22 @@ class AutenticacaoControllerTest {
     @MockitoBean
     private UsuarioService usuarioService;
 
+    @MockitoBean
+    private AutenticacaoService autenticacaoService;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
+
     private static final String NOME = "Matheus Filipe do Nascimento Pereira";
     private static final String EMAIL = "matheusfnpereira@gmail.com";
     private static final String SENHA = "Ab123456";
     private static final String NOME_INVALIDO_BRANCO = " ";
     private static final String EMAIL_INVALIDO_FORMATO = "email.invalido.com";
     private static final String SENHA_INVALIDA_REGEX = "123456";
+    private static final String TOKEN_JWT = "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTRlAtQUNJTSBBUEkiLCJzdWIiOiJtYXRoZXVzZm5wZXJlaXJhQGdtYWlsLmNvbSIsImlhdCI6MTc2MzMwNjE3NiwiZXhwIjoxNzYzMzM0OTc2fQ.e90EOyfiPFUE4Mu5LgbZEtrYnQIGzueecgm4G-fWIKTtSr7IuxC1X_hBkltJBRxHo9ocTvQFje44r0g84TqaiQ";
 
     /**
      * Testa o endpoint POST /autenticacao/cadastro (RF07).
@@ -148,6 +164,70 @@ class AutenticacaoControllerTest {
         String jsonRequisicao = objectMapper.writeValueAsString(dadosInvalidos);
 
         mockMvc.perform(post("/autenticacao/cadastro")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonRequisicao))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    /**
+     * Testa o endpoint POST /autenticacao/login (RF08).
+     * Valida o cenário de sucesso (HTTP 200 OK).
+     *
+     * @throws Exception se ocorrer um erro durante a execução do MockMvc.
+     */
+    @SuppressWarnings("null")
+    @Test
+    @DisplayName("login: Quando credenciais válidas, deve retornar HTTP 200 OK e o Token JWT")
+    void testeLogin_QuandoCredenciaisValidas_DeveRetornar200() throws Exception {
+        DadosAutenticacaoDTO dadosLogin = new DadosAutenticacaoDTO(EMAIL, SENHA);
+        DadosTokenJWTDTO dadosToken = new DadosTokenJWTDTO(TOKEN_JWT);
+        String jsonRequisicao = objectMapper.writeValueAsString(dadosLogin);
+
+        when(autenticacaoService.login(any(DadosAutenticacaoDTO.class))).thenReturn(dadosToken);
+
+        mockMvc.perform(post("/autenticacao/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonRequisicao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(TOKEN_JWT));
+    }
+
+    /**
+     * Testa o endpoint POST /autenticacao/login (RF13 - Falha de Autenticação).
+     * Valida o cenário de credenciais inválidas (HTTP 401 Unauthorized).
+     *
+     * @throws Exception se ocorrer um erro durante a execução do MockMvc.
+     */
+    @SuppressWarnings("null")
+    @Test
+    @DisplayName("login: Quando credenciais inválidas (auth failure), deve retornar HTTP 401 Unauthorized")
+    void testeLogin_QuandoCredenciaisInvalidas_DeveRetornar401() throws Exception {
+        DadosAutenticacaoDTO dadosLogin = new DadosAutenticacaoDTO(EMAIL, "senhaErrada");
+        String jsonRequisicao = objectMapper.writeValueAsString(dadosLogin);
+
+        when(autenticacaoService.login(any(DadosAutenticacaoDTO.class)))
+                .thenThrow(new BadCredentialsException("E-mail ou senha inválidos."));
+
+        mockMvc.perform(post("/autenticacao/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonRequisicao))
+                .andExpect(status().isUnauthorized()); // Espera HTTP 401 (capturado pelo TratadorDeErros)
+    }
+
+    /**
+     * Testa o endpoint POST /autenticacao/login (Validação).
+     * Valida o cenário de DTO inválido (ex: e-mail em branco).
+     *
+     * @throws Exception se ocorrer um erro durante a execução do MockMvc.
+     */
+    @SuppressWarnings("null")
+    @Test
+    @DisplayName("login: Quando dados de entrada inválidos (DTO Validation), deve retornar HTTP 422")
+    void testeLogin_QuandoEmailEmBranco_DeveRetornar422() throws Exception {
+        DadosAutenticacaoDTO dadosInvalidos = new DadosAutenticacaoDTO(" ", SENHA);
+        String jsonRequisicao = objectMapper.writeValueAsString(dadosInvalidos);
+
+        mockMvc.perform(post("/autenticacao/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonRequisicao))
                 .andExpect(status().isUnprocessableEntity());

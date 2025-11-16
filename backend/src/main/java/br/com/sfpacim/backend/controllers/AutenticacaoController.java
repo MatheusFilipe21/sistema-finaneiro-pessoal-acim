@@ -10,11 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.sfpacim.backend.doc.ExemplosDocumentacao;
+import br.com.sfpacim.backend.dtos.autenticacao.DadosAutenticacaoDTO;
+import br.com.sfpacim.backend.dtos.autenticacao.DadosTokenJWTDTO;
 import br.com.sfpacim.backend.dtos.erro.ErroPadraoDTO;
 import br.com.sfpacim.backend.dtos.erro.ErroValidacaoDTO;
 import br.com.sfpacim.backend.dtos.usuario.DadosCadastroUsuarioDTO;
 import br.com.sfpacim.backend.dtos.usuario.UsuarioDTO;
 import br.com.sfpacim.backend.exceptions.ViolacaoDadosExcecao;
+import br.com.sfpacim.backend.services.AutenticacaoService;
 import br.com.sfpacim.backend.services.UsuarioService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +41,7 @@ import jakarta.validation.Valid;
 public class AutenticacaoController {
 
     private final UsuarioService usuarioService;
+    private final AutenticacaoService autenticacaoService;
 
     /**
      * Construtor para Injeção de Dependências.
@@ -46,10 +50,13 @@ public class AutenticacaoController {
      * O Spring injeta automaticamente a instância de UsuarioService
      * quando esta classe é criada.
      *
-     * @param usuarioService O serviço que lida com a lógica de usuários.
+     * @param usuarioService      O serviço que lida com a lógica de usuários.
+     * @param autenticacaoService O serviço que lida com a lógica de login.
      */
-    public AutenticacaoController(UsuarioService usuarioService) {
+    public AutenticacaoController(UsuarioService usuarioService,
+            AutenticacaoService autenticacaoService) {
         this.usuarioService = usuarioService;
+        this.autenticacaoService = autenticacaoService;
     }
 
     /**
@@ -76,5 +83,25 @@ public class AutenticacaoController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(usuario);
+    }
+
+    /**
+     * Endpoint (RF08) para autenticar (login) um usuário.
+     *
+     * @param dados Os dados de autenticação (email e senha) (RF09).
+     * @return HTTP 200 (OK) com o Token JWT (RF12).
+     *         HTTP 401 (Unauthorized) se as credenciais forem inválidas (RF13).
+     */
+    @Operation(summary = "Autentica um usuário", description = "Endpoint público para login. Recebe e-mail e senha e retorna um Token JWT se a autenticação for bem-sucedida.", responses = {
+            @ApiResponse(responseCode = "200", description = "Login bem-sucedido", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DadosTokenJWTDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Não Autorizado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErroPadraoDTO.class))),
+            @ApiResponse(responseCode = "422", description = "Erro de Validação", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErroValidacaoDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Erro Interno do Servidor", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErroPadraoDTO.class), examples = @ExampleObject(value = ExemplosDocumentacao.ERRO_INTERNO_SERVIDOR)))
+    })
+    @PostMapping("/login")
+    public ResponseEntity<DadosTokenJWTDTO> login(@Valid @RequestBody DadosAutenticacaoDTO dados) {
+        DadosTokenJWTDTO dadosToken = autenticacaoService.login(dados);
+
+        return ResponseEntity.ok(dadosToken);
     }
 }

@@ -2,6 +2,11 @@
   "name": "Dev Container (Java/Angular)",
   "image": "mcr.microsoft.com/devcontainers/java:21",
 
+  // Define o Fuso Horário
+  "containerEnv": {
+    "TZ": "America/Sao_Paulo"
+  },
+
   "features": {
     // Habilita o Docker-outside-of-Docker (DooD):
     // 1. Monta o /var/run/docker.sock
