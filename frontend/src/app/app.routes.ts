@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { Login } from './components/login/login';
 import { Cadastro } from './components/cadastro/cadastro';
 
 /**
@@ -6,4 +7,8 @@ import { Cadastro } from './components/cadastro/cadastro';
  *
  * @author Matheus F. N. Pereira
  */
-export const routes: Routes = [{ path: 'cadastro', component: Cadastro }];
+export const routes: Routes = [
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: Login },
+  { path: 'cadastro', component: Cadastro },
+];

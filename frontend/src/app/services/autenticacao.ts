@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DadosCadastroUsuarioDTO } from '../dtos/usuario/DadosCadastroUsuarioDTO';
 import { UsuarioDTO } from '../dtos/usuario/UsuarioDTO';
+import { DadosAutenticacaoDTO } from '../dtos/autenticacao/DadosAutenticacaoDTO';
+import { DadosTokenJWTDTO } from '../dtos/autenticacao/DadosTokenJWTDTO';
 
 /**
  * Serviço responsável pela comunicação com os endpoints
@@ -31,5 +33,15 @@ export class Autenticacao {
    */
   registrar(dados: DadosCadastroUsuarioDTO): Observable<UsuarioDTO> {
     return this.http.post<UsuarioDTO>(`${this.API_URL}/cadastro`, dados);
+  }
+
+  /**
+   * Chama o endpoint POST /autenticacao/login no backend (RF08).
+   *
+   * @param dados Os dados (DTO) do formulário de login (email e senha).
+   * @returns Um Observable com o DadosTokenJWTDTO (contendo o token).
+   */
+  login(dados: DadosAutenticacaoDTO): Observable<DadosTokenJWTDTO> {
+    return this.http.post<DadosTokenJWTDTO>(`${this.API_URL}/login`, dados);
   }
 }

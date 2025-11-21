@@ -1,30 +1,30 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
 import { provideLocationMocks } from '@angular/common/testing';
-import { Cadastro } from './cadastro';
+import { Login } from './login';
 import { Autenticacao } from '../../services/autenticacao';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ReactiveFormsModule } from '@angular/forms';
-import { UsuarioDTO } from '../../dtos/usuario/UsuarioDTO';
-import { RouterModule } from '@angular/router';
-import { Login } from '../login/login';
+import { DadosTokenJWTDTO } from '../../dtos/autenticacao/DadosTokenJWTDTO';
+import { DadosAutenticacaoDTO } from '../../dtos/autenticacao/DadosAutenticacaoDTO';
+import { Cadastro } from '../cadastro/cadastro';
 
 /**
  * Mock do serviço de autenticação.
  */
 class AutenticacaoServiceMock {
-  registrar = jasmine.createSpy('registrar').and.returnValue(
+  login = jasmine.createSpy('login').and.returnValue(
     of({
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      nome: 'Matheus Filipe do Nascimento Pereira',
-      email: 'matheusfnpereira@gmail.com',
-    } as UsuarioDTO)
+      token:
+        'eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTRlAtQUNJTSBBUEkiLCJzdWIiOiJtYXRoZXVzZm5wZXJlaXJhQGdtYWlsLmNvbSIsImlhdCI6MTc2MzMwNjE3NiwiZXhwIjoxNzYzMzM0OTc2fQ.e90EOyfiPFUE4Mu5LgbZEtrYnQIGzueecgm4G-fWIKTtSr7IuxC1X_hBkltJBRxHo9ocTvQFje44r0g84TqaiQ',
+    } as DadosTokenJWTDTO)
   );
 }
 
-describe('Cadastro', () => {
-  let component: Cadastro;
-  let fixture: ComponentFixture<Cadastro>;
+describe('Login', () => {
+  let component: Login;
+  let fixture: ComponentFixture<Login>;
   let autenticacaoService: AutenticacaoServiceMock;
 
   /**
@@ -34,7 +34,7 @@ describe('Cadastro', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        Cadastro,
+        Login,
         ReactiveFormsModule,
         RouterModule.forRoot([
           { path: '', component: Login },
@@ -47,7 +47,7 @@ describe('Cadastro', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Cadastro);
+    fixture = TestBed.createComponent(Login);
     component = fixture.componentInstance;
 
     autenticacaoService = TestBed.inject(Autenticacao) as any;
@@ -68,7 +68,6 @@ describe('Cadastro', () => {
   it('deve inicializar o formulário com campos vazios', () => {
     const form = component.formulario;
 
-    expect(form.get('nome')?.value).toBe('');
     expect(form.get('email')?.value).toBe('');
     expect(form.get('senha')?.value).toBe('');
   });
@@ -77,7 +76,7 @@ describe('Cadastro', () => {
    * Verifica se o formulário é considerado inválido quando campos obrigatórios não são preenchidos.
    */
   it('deve deixar o formulário inválido quando campos obrigatórios estiverem vazios', () => {
-    component.formulario.setValue({ nome: '', email: '', senha: '' });
+    component.formulario.setValue({ email: '', senha: '' });
     expect(component.formulario.invalid).toBeTrue();
   });
 
@@ -93,57 +92,43 @@ describe('Cadastro', () => {
   });
 
   /**
-   * Testa os requisitos mínimos da senha.
+   * Garante que login() não é chamado quando o formulário está inválido.
    */
-  it('deve validar requisitos mínimos da senha', () => {
-    component.formulario.get('senha')?.setValue('abc');
-    expect(component.formulario.get('senha')?.valid).toBeFalse();
-
-    component.formulario.get('senha')?.setValue('Senha123');
-    expect(component.formulario.get('senha')?.valid).toBeTrue();
-  });
-
-  /**
-   * Garante que registrar() não é chamado quando o formulário está inválido.
-   */
-  it('não deve chamar o serviço registrar() se o formulário estiver inválido', () => {
+  it('não deve chamar o serviço login() se o formulário estiver inválido', () => {
     component.formulario.setValue({
-      nome: '',
       email: '',
       senha: '',
     });
 
     component.aoEnviar();
 
-    expect(autenticacaoService.registrar).not.toHaveBeenCalled();
+    expect(autenticacaoService.login).not.toHaveBeenCalled();
   });
 
   /**
-   * Verifica se registrar() é chamado com os dados corretos quando o formulário é válido.
+   * Verifica se login() é chamado com os dados corretos quando o formulário é válido.
    */
-  it('deve chamar o serviço registrar() com dados válidos', () => {
+  it('deve chamar o serviço login() com dados válidos', () => {
     const dados = {
-      nome: 'Matheus Filipe do Nascimento Pereira',
       email: 'matheusfnpereira@gmail.com',
       senha: 'Ab123456',
-    };
+    } as DadosAutenticacaoDTO;
 
     component.formulario.setValue(dados);
 
     component.aoEnviar();
 
-    expect(autenticacaoService.registrar).toHaveBeenCalledOnceWith(dados);
+    expect(autenticacaoService.login).toHaveBeenCalledOnceWith(dados);
   });
 
   /**
-   * Verifica se o MatSnackBar é acionado após um cadastro bem-sucedido.
+   * Verifica se o MatSnackBar é acionado após um login bem-sucedido.
    */
-  it('deve exibir snackbar ao cadastrar com sucesso', () => {
+  it('deve exibir snackbar ao logar com sucesso', () => {
     component.formulario.setValue({
-      nome: 'Matheus Filipe do Nascimento Pereira',
       email: 'matheusfnpereira@gmail.com',
       senha: 'Ab123456',
-    });
+    } as DadosAutenticacaoDTO);
 
     const snackInstance = (component as any).snackBar as MatSnackBar;
     spyOn(snackInstance, 'open');
@@ -166,24 +151,6 @@ describe('Cadastro', () => {
   });
 
   /**
-   * Verifica alteração do signal ao focar no campo de senha.
-   */
-  it('deve definir senhaEstaEmFoco como true ao focar', () => {
-    component.senhaEstaEmFoco.set(false);
-    component.aoFocarSenha();
-    expect(component.senhaEstaEmFoco()).toBeTrue();
-  });
-
-  /**
-   * Verifica alteração do signal ao desfocar o campo de senha.
-   */
-  it('deve definir senhaEstaEmFoco como false ao desfocar', () => {
-    component.senhaEstaEmFoco.set(true);
-    component.aoDesfocarSenha();
-    expect(component.senhaEstaEmFoco()).toBeFalse();
-  });
-
-  /**
    * Verifica retorno vazio para controles inexistentes.
    */
   it('deve retornar vazio se o controle não existir', () => {
@@ -194,10 +161,10 @@ describe('Cadastro', () => {
    * Verifica mensagem de erro para campo obrigatório.
    */
   it('deve retornar erro de campo obrigatório', () => {
-    const control = component.formulario.get('nome');
+    const control = component.formulario.get('senha');
     control?.setValue('');
     control?.markAsTouched();
-    expect(component.obterMensagemErro('nome')).toBe('Este campo é obrigatório.');
+    expect(component.obterMensagemErro('senha')).toBe('Este campo é obrigatório.');
   });
 
   /**
@@ -211,16 +178,6 @@ describe('Cadastro', () => {
   });
 
   /**
-   * Verifica mensagem de erro para senha inválida.
-   */
-  it('deve retornar erro de senha fraca', () => {
-    const control = component.formulario.get('senha');
-    control?.setValue('123');
-    control?.markAsTouched();
-    expect(component.obterMensagemErro('senha')).toBe('A senha não atende aos requisitos mínimos.');
-  });
-
-  /**
    * Verifica retorno vazio quando o campo é válido.
    */
   it('deve retornar vazio quando o controle é válido', () => {
@@ -231,13 +188,13 @@ describe('Cadastro', () => {
   });
 
   /**
-   * Verifica se o link de login aponta para a rota correta.
+   * Verifica se o link de cadastro aponta para a rota correta.
    */
-  it('deve ter um link que redireciona para /login', () => {
-    const linkElement: HTMLAnchorElement = fixture.nativeElement.querySelector('#link-login a');
+  it('deve ter um link que redireciona para /cadastro', () => {
+    const linkElement: HTMLAnchorElement = fixture.nativeElement.querySelector('#link-cadastro a');
 
     expect(linkElement).toBeTruthy();
 
-    expect(linkElement.getAttribute('href')).toBe('/login');
+    expect(linkElement.getAttribute('href')).toBe('/cadastro');
   });
 });

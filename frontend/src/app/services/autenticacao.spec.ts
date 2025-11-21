@@ -5,6 +5,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { Autenticacao } from './autenticacao';
 import { DadosCadastroUsuarioDTO } from '../dtos/usuario/DadosCadastroUsuarioDTO';
 import { UsuarioDTO } from '../dtos/usuario/UsuarioDTO';
+import { DadosAutenticacaoDTO } from '../dtos/autenticacao/DadosAutenticacaoDTO';
+import { DadosTokenJWTDTO } from '../dtos/autenticacao/DadosTokenJWTDTO';
 
 /**
  * Testes unitários para o serviço {@link Autenticacao}.
@@ -67,6 +69,33 @@ describe('Autenticacao', () => {
 
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dadosCadastro);
+
+    req.flush(mockResponse);
+  });
+
+  /**
+   * Testa o método login(), garantindo que o endpoint correto (POST /autenticacao/login) seja chamado,
+   * que o DTO enviado esteja correto e que o retorno do backend (DadosTokenJWTDTO) seja recebido.
+   */
+  it('deve autenticar um usuário (POST /autenticacao/login)', (done) => {
+    const dadosLogin: DadosAutenticacaoDTO = {
+      email: 'matheusfnpereira@gmail.com',
+      senha: 'Ab123456',
+    };
+    const mockResponse: DadosTokenJWTDTO = {
+      token:
+        'eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTRlAtQUNJTSBBUEkiLCJzdWIiOiJtYXRoZXVzZm5wZXJlaXJhQGdtYWlsLmNvbSIsImlhdCI6MTc2MzMwNjE3NiwiZXhwIjoxNzYzMzM0OTc2fQ.e90EOyfiPFUE4Mu5LgbZEtrYnQIGzueecgm4G-fWIKTtSr7IuxC1X_hBkltJBRxHo9ocTvQFje44r0g84TqaiQ',
+    };
+
+    service.login(dadosLogin).subscribe((res) => {
+      expect(res).toEqual(mockResponse);
+      done();
+    });
+
+    const req = httpMock.expectOne('/autenticacao/login');
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dadosLogin);
 
     req.flush(mockResponse);
   });

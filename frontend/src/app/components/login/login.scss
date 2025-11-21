@@ -35,32 +35,6 @@ main {
       }
     }
 
-    #requisitos-senha {
-      font-size: 13px;
-      margin-top: -5px;
-      margin-bottom: 15px;
-      padding-left: 4px;
-      line-height: 1.5;
-
-      div {
-        display: flex;
-        align-items: center;
-        color: var(--mat-sys-error);
-        font-size: 1rem;
-
-        &.valid {
-          color: #4caf50;
-        }
-
-        .icone-requisito-senha {
-          display: inline-block;
-          font-weight: bold;
-          margin-right: 8px;
-          font-size: 1.5rem;
-        }
-      }
-    }
-
     #acoes {
       display: block;
       margin-top: 16px;
@@ -72,7 +46,7 @@ main {
       }
     }
 
-    #link-login {
+    #link-cadastro {
       text-align: center;
       margin-top: 24px;
       font-size: 0.9rem;
