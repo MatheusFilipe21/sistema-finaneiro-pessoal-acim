@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
+import { validarSenhasIguais } from '../../validators/validar-senhas-iguais';
+import { DadosCadastroUsuarioDTO } from '../../dtos/usuario/DadosCadastroUsuarioDTO';
 
 /**
  * Componente responsável pelo formulário e lógica
@@ -38,6 +40,7 @@ export class Cadastro {
 
   formulario: FormGroup;
   esconderSenha = signal(true);
+  esconderConfirmarSenha = signal(true);
   senhaEstaEmFoco = signal(false);
   requisitosSenha = {
     minLength: false,
@@ -52,24 +55,30 @@ export class Cadastro {
    * e validadores necessários para o cadastro.
    */
   constructor() {
-    this.formulario = this.formBuilder.group({
-      // RF04: Nome obrigatório
-      nome: ['', [Validators.required]],
+    this.formulario = this.formBuilder.group(
+      {
+        // RF04: Nome obrigatório
+        nome: ['', [Validators.required]],
 
-      // RF02 e RF04: E-mail obrigatório e em formato válido
-      email: ['', [Validators.required, Validators.email]],
+        // RF02 e RF04: E-mail obrigatório e em formato válido
+        email: ['', [Validators.required, Validators.email]],
 
-      // RF03 e RF04: Senha obrigatória e complexa (Mínimo 8, 1 maiúscula, 1 minúscula, 1 número)
-      senha: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(8),
-          // (RF03) Regex: Mínimo 8, 1 maiúscula, 1 minúscula, 1 número
-          Validators.pattern(`^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$`),
+        // RF03 e RF04: Senha obrigatória e complexa (Mínimo 8, 1 maiúscula, 1 minúscula, 1 número)
+        senha: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            // (RF03) Regex: Mínimo 8, 1 maiúscula, 1 minúscula, 1 número
+            Validators.pattern(`^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$`),
+          ],
         ],
-      ],
-    });
+        confirmarSenha: ['', Validators.required],
+      },
+      {
+        validators: validarSenhasIguais,
+      }
+    );
 
     // Escuta as mudanças no campo 'senha' para atualizar a UI de requisitos
     this.formulario.get('senha')?.valueChanges.subscribe((valor) => {
@@ -83,6 +92,14 @@ export class Cadastro {
    */
   alternarVisibilidadeSenha(): void {
     this.esconderSenha.update((valor) => !valor);
+  }
+
+  /**
+   * Alterna a visibilidade da confirmação de senha no campo de input (o "olho").
+   * Atualiza o signal 'esconderConfirmarSenha'.
+   */
+  alternarVisibilidadeConfirmarSenha(): void {
+    this.esconderConfirmarSenha.update((valor) => !valor);
   }
 
   /**
@@ -126,6 +143,10 @@ export class Cadastro {
     if (nomeControle === 'senha' && control.invalid) {
       return 'A senha não atende aos requisitos mínimos.';
     }
+
+    if (nomeControle === 'confirmarSenha' && control.hasError('senhasNaoConferem')) {
+      return 'As senhas não conferem.';
+    }
     return '';
   }
 
@@ -139,7 +160,10 @@ export class Cadastro {
       return;
     }
 
-    this.autenticacaoService.registrar(this.formulario.value).subscribe({
+    const { confirmarSenha, ...dadosParaEnvio } = this.formulario.value;
+    const dto: DadosCadastroUsuarioDTO = dadosParaEnvio;
+
+    this.autenticacaoService.registrar(dto).subscribe({
       next: (usuario) => {
         this.snackBar.open(`Usuário ${usuario.nome} cadastrado com sucesso!`, 'OK', {
           duration: 5000,

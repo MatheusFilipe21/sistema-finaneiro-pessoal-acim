@@ -56,6 +56,34 @@
         }
       </mat-form-field>
 
+      <mat-form-field appearance="outline">
+        <mat-label>Confirmar Senha</mat-label>
+        <input
+          matInput
+          id="input-confirmar-senha"
+          formControlName="confirmarSenha"
+          [type]="esconderConfirmarSenha() ? 'password' : 'text'"
+          placeholder="Digite a senha novamente"
+          autocomplete="on"
+        />
+
+        <button
+          mat-icon-button
+          matSuffix
+          id="btn-alternar-confirmar-senha"
+          type="button"
+          (click)="alternarVisibilidadeConfirmarSenha()"
+          [attr.aria-label]="'Alternar visibilidade da confirmação de senha'"
+        >
+          <mat-icon>{{ esconderConfirmarSenha() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+
+        @if (formulario.get('confirmarSenha')?.invalid &&
+        (formulario.get('confirmarSenha')?.touched)) {
+        <mat-error>{{ obterMensagemErro('confirmarSenha') }}</mat-error>
+        }
+      </mat-form-field>
+
       @if (formulario.get('senha')?.touched || senhaEstaEmFoco()) {
       <div id="requisitos-senha">
         <div id="requisito-tamanho-minimo" [class.valid]="requisitosSenha.minLength">

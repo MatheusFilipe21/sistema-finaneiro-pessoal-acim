@@ -77,7 +77,7 @@ describe('Cadastro', () => {
    * Verifica se o formulário é considerado inválido quando campos obrigatórios não são preenchidos.
    */
   it('deve deixar o formulário inválido quando campos obrigatórios estiverem vazios', () => {
-    component.formulario.setValue({ nome: '', email: '', senha: '' });
+    component.formulario.setValue({ nome: '', email: '', senha: '', confirmarSenha: '' });
     expect(component.formulario.invalid).toBeTrue();
   });
 
@@ -111,28 +111,12 @@ describe('Cadastro', () => {
       nome: '',
       email: '',
       senha: '',
+      confirmarSenha: '',
     });
 
     component.aoEnviar();
 
     expect(autenticacaoService.registrar).not.toHaveBeenCalled();
-  });
-
-  /**
-   * Verifica se registrar() é chamado com os dados corretos quando o formulário é válido.
-   */
-  it('deve chamar o serviço registrar() com dados válidos', () => {
-    const dados = {
-      nome: 'Matheus Filipe do Nascimento Pereira',
-      email: 'matheusfnpereira@gmail.com',
-      senha: 'Ab123456',
-    };
-
-    component.formulario.setValue(dados);
-
-    component.aoEnviar();
-
-    expect(autenticacaoService.registrar).toHaveBeenCalledOnceWith(dados);
   });
 
   /**
@@ -143,6 +127,7 @@ describe('Cadastro', () => {
       nome: 'Matheus Filipe do Nascimento Pereira',
       email: 'matheusfnpereira@gmail.com',
       senha: 'Ab123456',
+      confirmarSenha: 'Ab123456',
     });
 
     const snackInstance = (component as any).snackBar as MatSnackBar;
@@ -239,5 +224,60 @@ describe('Cadastro', () => {
     expect(linkElement).toBeTruthy();
 
     expect(linkElement.getAttribute('href')).toBe('/login');
+  });
+
+  /**
+   * Verifica se o formulário é inválido quando as senhas não coincidem.
+   */
+  it('deve invalidar o formulário se a confirmação de senha for diferente', () => {
+    component.formulario.setValue({
+      nome: 'Matheus Filipe do Nascimento Pereira',
+      email: 'matheusfnpereira@gmail.com',
+      senha: 'Ab123456',
+      confirmarSenha: 'Ab1234567',
+    });
+
+    expect(component.formulario.invalid).toBeTrue();
+    expect(component.formulario.get('confirmarSenha')?.hasError('senhasNaoConferem')).toBeTrue();
+    expect(component.obterMensagemErro('confirmarSenha')).toBe('As senhas não conferem.');
+  });
+
+  /**
+   * Verifica a alternância de visibilidade da confirmação de senha.
+   */
+  it('deve alternar a visibilidade da confirmação de senha', () => {
+    const valorInicial = component.esconderConfirmarSenha();
+    component.alternarVisibilidadeConfirmarSenha();
+    expect(component.esconderConfirmarSenha()).toBe(!valorInicial);
+
+    component.alternarVisibilidadeConfirmarSenha();
+    expect(component.esconderConfirmarSenha()).toBe(valorInicial);
+  });
+
+  /**
+   * Garante que o campo confirmarSenha não é enviado para o backend.
+   */
+  it('não deve enviar o campo confirmarSenha para o serviço', () => {
+    const dados = {
+      nome: 'Matheus Filipe do Nascimento Pereira',
+      email: 'matheusfnpereira@gmail.com',
+      senha: 'Ab123456',
+      confirmarSenha: 'Ab123456',
+    };
+
+    const dadosEsperadosNoBackend = {
+      nome: 'Matheus Filipe do Nascimento Pereira',
+      email: 'matheusfnpereira@gmail.com',
+      senha: 'Ab123456',
+    };
+
+    component.formulario.setValue(dados);
+    component.aoEnviar();
+
+    const argumentoChamada = autenticacaoService.registrar.calls.mostRecent().args[0];
+
+    expect(argumentoChamada).toEqual(jasmine.objectContaining(dadosEsperadosNoBackend));
+
+    expect(argumentoChamada.confirmarSenha).toBeUndefined();
   });
 });
